@@ -10,3 +10,4 @@ from mypkg.steepest_descent import SteepestDescent
 from mypkg.interp import Interp
 from mypkg.splines import Splines
 from mypkg.quadrature import Quad
+from mypkg.initialValueProblems import IVP
