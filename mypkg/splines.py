@@ -98,6 +98,31 @@ class Splines:
         # Return results
         return [self.xeval, self.yeval]
 
+    def linear(self):
+        # Create vector to store evaluation of linear splines
+        self.yeval = np.zeros(self.Neval)
+
+        for i in range(self.Nnodes-1):
+            # Find indices of xeval in the current interval
+            ind = np.where((self.xeval >= self.xnode[i]) & (self.xeval <= self.xnode[i+1]))
+            ind = ind[0]
+
+            # Calculate number of indices
+            n = ind.size
+
+            # Temporarily store info needed to create a line in the current interval
+            a = self.xnode[i]
+            b = self.xnode[i+1]
+
+            # Evaluate line at all the points in the interval
+            y = eval_line(a, b, self.f, self.xeval[ind])
+
+            # Add points to yeval
+            self.yeval[ind] = y
+
+        # Return yeval
+        return self.xeval, self.yeval
+
 
 
 # Subroutines
@@ -112,3 +137,17 @@ def eval_cubic(x, xi, xi1, Mi, Mi1, fxi, fxi1, hi):
 
     # Return result
     return Si
+
+def eval_line(x0, x1, f, x):
+    # Evaluate function at endpoints
+    f0 = f(x0)
+    f1 = f(x1)
+
+    # Calculate slope of line
+    m = (f1 - f0) / (x1 - x0)
+
+    # Evaluate line
+    y = (m * (x - x1)) + f1
+
+    # Return results
+    return y
