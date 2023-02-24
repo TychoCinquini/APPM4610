@@ -67,3 +67,71 @@ class IVP:
             w[i] = w[i-1]+(self.h*(fi+((self.h/2)*Dfi)))
 
         return t, w
+
+    def rk4(self):
+        # Create solution vectors
+        w = np.zeros(self.N + 1)
+        w[0] = self.w0
+        t = np.zeros(self.N + 1)
+        t[0] = self.a
+
+        # Iterate across all time steps
+        for i in np.arange(1, self.N+1):
+            # Calculate k values
+            k1 = self.h*self.f(t[i-1], w[i-1])
+            k2 = self.h*self.f(t[i-1]+(self.h/2), w[i-1]+(k1/2))
+            k3 = self.h*self.f(t[i-1]+(self.h/2), w[i-1]+(k2/2))
+            k4 = self.h*self.f(t[i-1]+self.h, w[i-1]+k3)
+
+            # Calculate next time step
+            ti = self.a + (i-1) * self.h
+            t[i] = ti + self.h
+
+            # Calculate approximation at next time step
+            w[i] = w[i-1]+((k1+(2*k2)+(2*k3)+k4)/6)
+
+        return t, w
+
+    def adams_bashforth2(self):
+        # Create solution vectors
+        w = np.zeros(self.N + 1)
+        w[0] = self.w0
+        t = np.zeros(self.N + 1)
+        t[0] = self.a
+
+        # Call RK4 to generate "initial conditions"
+        ivp = IVP(self.a, self.a+self.h, self.h, self.w0, self.f)
+        t[0:2], w[0:2] = ivp.rk4()
+
+        # Iterate over all remaining time steps
+        for i in np.arange(2, self.N+1):
+            # Calculate next time step
+            ti = self.a + (i-1) * self.h
+            t[i] = ti + self.h
+
+            # Calculate approximation at next time step
+            w[i] = w[i-1] + (self.h/2)*((3*self.f(t[i-1], w[i-1]))-self.f(t[i-2], w[i-2]))
+
+        return t, w
+
+    def adams_bashforth4(self):
+        # Create solution vectors
+        w = np.zeros(self.N + 1)
+        w[0] = self.w0
+        t = np.zeros(self.N + 1)
+        t[0] = self.a
+
+        # Call RK4 to generate "initial conditions"
+        ivp = IVP(self.a, self.a+(3*self.h), self.h, self.w0, self.f)
+        t[0:4], w[0:4] = ivp.rk4()
+
+        # Iterate over all remaining time steps
+        for i in np.arange(4, self.N+1):
+            # Calculate next time step
+            ti = self.a + (i-1) * self.h
+            t[i] = ti + self.h
+
+            # Calculate approximation at next time step
+            w[i] = w[i-1] + (self.h/24)*((55*self.f(t[i-1], w[i-1]))-(59*self.f(t[i-2], w[i-2]))+(37*self.f(t[i-3], w[i-3]))-(9*self.f(t[i-4], w[i-4])))
+
+        return t, w
