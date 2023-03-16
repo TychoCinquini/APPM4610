@@ -11,3 +11,4 @@ from mypkg.interp import Interp
 from mypkg.splines import Splines
 from mypkg.quadrature import Quad
 from mypkg.initialValueProblems import IVP, MultiIVP
+from mypkg.boundaryValueProblems import LBVP
