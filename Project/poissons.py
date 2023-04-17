@@ -1,38 +1,57 @@
 # Import required python packages
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import cm
 import math
-import scipy
 
-# Helper functions
-def makeA(h, k, n, m):
-    lmax = (m-1)*(n-1)
-    diag0 = np.ones(lmax)*(2*(math.pow(h/k, 2)+1))
-    diag1 = -1*np.ones(lmax)
-    diag2 = -1*np.ones(lmax)*math.pow(h/k, 2)
-    data = np.array([diag2, diag1, diag0, diag1, diag2])
-    diags = np.array([-1*(n-1), -1, 0, 1, n-1])
-    A = scipy.sparse.spdiags(data, diags, lmax, lmax).toarray()
-    for i in np.arange(1, m-1):
-        A[(i*(n-1))-1, i*(n-1)] = 0
-        A[i*(n-1), (i*(n-1))-1] = 0
-    return A
+# Import custom packages
+from FiniteDifferences2D import FiniteDifferences2D
 
-def makeb(f, g, h, k, n, m, x, y):
-    lmax = (m - 1) * (n - 1)
-    b = np.zeros(lmax)
-    for i in np.arange(1,n):
-        for j in np.arange(1,m):
-            l = i+((m-1-j)*(n-1))
-            b[l-1] = -1*math.pow(h, 2)*f(x[i], y[j])
-    for i in np.arange(m-1):
-        b[i*n] = b[i*n] + g(x[0], y[m-i-1])
-        b[(n-1)*(i+1)-1] = b[(n-1)*(i+1)-1] + g(x[n], y[m-i-1])
-    for i in np.arange(n-1):
-        b[i] = b[i] + (math.pow(h/k, 2)*g(x[i+1], y[m]))
-        b[lmax-n+1+i] = b[lmax-n+1+i] + (math.pow(h/k, 2)*g(x[i+1], y[0]))
+# Define meshgrid boundary
+a = 0
+b = 0.5
+c = 0
+d = 0.5
 
-    return b
+# Define number of points along each axis
+n = 30
+m = 50
 
+
+# Define f(x)
+f = lambda x, y: 0.0
+f = np.vectorize(f)
+
+
+# Define g(x)
+def g(x, y):
+    if x == 0.0:
+        return 0
+    elif y == 0.0:
+        return 0
+    elif x == 0.5:
+        return 200*y
+    elif y == 0.5:
+        return 200*x
+
+
+# Create instance of 2D Finite Differences class
+fd1 = FiniteDifferences2D(a, b, c, d, n, m, f, g)
+
+# Solve problem using Poisson BC
+_ = fd1.solveLinearSystemPoisson()
+
+# Create matrices for contour plot
+[X, Y, Wl] = fd1.surfacePlotElements()
+
+# Plot contour
+ax = plt.axes(projection='3d')
+ax.plot_surface(X, Y, Wl, cmap=cm.viridis)
+ax.set_xlabel("Width [m]")
+ax.set_ylabel("Height [m]")
+ax.set_zlabel("Temperature [°C]")
+ax.set_title("Steady-State Heat Distribution in a Thin Square Metal Plate")
+plt.show()
 
 # Define meshgrid boundary
 a = 0
@@ -40,43 +59,41 @@ b = 2
 c = 0
 d = 1
 
-
-# Define Dirichlet BC
-def g(x,y):
-    x = float(x)
-    y = float(y)
-    if x == 0.0:
-        return 0.0
-    elif y == 0.0:
-        return x
-    elif x == 2.0:
-        return 2*math.exp(y)
-    else:
-        return x*math.exp(1)
+# Define number of points along each axis
+n = 50
+m = 50
 
 
 # Define f(x)
 f = lambda x, y: x*math.exp(y)
 f = np.vectorize(f)
 
-# Define number of points along each axis
-n = 6
-m = 5
 
-# Calculate interval size
-h = (b-a)/n
-k = (d-c)/m
+# Define g(x)
+def g(x, y):
+    if x == 0.0:
+        return 0
+    elif y == 0.0:
+        return x
+    elif x == 2.0:
+        return 2*math.exp(y)
+    elif y == 1.0:
+        return x*math.exp(1)
 
-# Calculate A matrix
-A = makeA(h, k, n, m)
 
-# Create x and y vectors
-x = np.linspace(a, b, num=n+1)
-y = np.linspace(c, d, num=m+1)
+# Create instance of 2D Finite Differences class
+fd2 = FiniteDifferences2D(a, b, c, d, n, m, f, g)
 
-# Calculate b vector
-b = makeb(f, g, h, k, n, m, x, y)
+# Solve problem using Poisson BC
+_ = fd2.solveLinearSystemPoisson()
 
-# Find approximation
-wl = np.linalg.solve(A,b)
-print(wl)
+# Create matrices for contour plot
+[X, Y, Wl] = fd2.surfacePlotElements()
+
+# Plot contour
+ax = plt.axes(projection='3d')
+ax.plot_surface(X, Y, Wl, cmap=cm.viridis)
+ax.set_xlabel("x")
+ax.set_ylabel("y")
+ax.set_title("Approximation of f(x,y)")
+plt.show()
