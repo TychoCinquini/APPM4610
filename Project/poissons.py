@@ -14,8 +14,8 @@ c = 0
 d = 0.5
 
 # Define number of points along each axis
-n = 30
-m = 50
+n = 20
+m = 20
 
 
 # Define f(x)
@@ -59,13 +59,8 @@ b = 2
 c = 0
 d = 1
 
-# Define number of points along each axis
-n = 50
-m = 50
-
-
 # Define f(x)
-f = lambda x, y: x*math.exp(y)
+f = lambda x, y: x * math.exp(y)
 f = np.vectorize(f)
 
 
@@ -76,19 +71,46 @@ def g(x, y):
     elif y == 0.0:
         return x
     elif x == 2.0:
-        return 2*math.exp(y)
+        return 2 * math.exp(y)
     elif y == 1.0:
-        return x*math.exp(1)
+        return x * math.exp(1)
 
 
-# Create instance of 2D Finite Differences class
-fd2 = FiniteDifferences2D(a, b, c, d, n, m, f, g)
+# Define u(x,y)
+u = lambda x, y: x * math.exp(y)
+u = np.vectorize(u)
 
-# Solve problem using Poisson BC
-_ = fd2.solveLinearSystemPoisson()
+# Instantiate error vector
+error = []
 
-# Create matrices for contour plot
-[X, Y, Wl] = fd2.surfacePlotElements()
+# Iterate over multiple number of points
+for num_points in np.array([5, 10, 25, 50, 100]):
+    # Define number of points along each axis
+    n = num_points
+    m = num_points
+
+    # Create instance of 2D Finite Differences class
+    fd2 = FiniteDifferences2D(a, b, c, d, n, m, f, g)
+
+    # Solve problem using Poisson BC
+    _ = fd2.solveLinearSystemPoisson()
+
+    # Create matrices for contour plot
+    [X, Y, Wl] = fd2.surfacePlotElements()
+
+    # Calculate exact solution
+    U = u(X, Y)
+
+    # Calculate average absolute error
+    error.append(np.mean(np.abs(U-Wl)))
+
+# Plot error
+plt.plot(np.array([36, 100, 625, 2500, 10000]), error)
+plt.xlabel("Number of Mesh Points")
+plt.ylabel("Average Absolute Error")
+plt.title("Average Absolute Error Versus Number of Mesh Points")
+plt.yscale('log')
+plt.show()
 
 # Plot contour
 ax = plt.axes(projection='3d')

@@ -90,7 +90,7 @@ class FiniteDifferences2D:
         counter = 0
         for j in np.arange(1, self.m):
             for i in np.arange(1, self.n):
-                self.fvec[counter] = self.f(self.x[i], self.y[j])
+                self.fvec[counter] = -1*math.pow(self.h, 2)*self.f(self.x[i], self.y[j])
                 counter = counter + 1
 
     # Create g subvector
@@ -155,7 +155,8 @@ class FiniteDifferences2D:
     def solveLinearSystemPoisson(self):
         # Create and solve linear system using Poisson BC
         self.createLinearSystemPoisson()
-        self.solveLinearSystem()
+        wl = self.solveLinearSystem()
+        return wl
 
     # Display solution
     def surfacePlotElements(self):
